@@ -6,11 +6,12 @@
 /*   By: mrezki <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:34:50 by mrezki            #+#    #+#             */
-/*   Updated: 2024/02/18 02:22:42 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/02/18 04:32:22 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
+#include <stdlib.h>
 #include <sys/errno.h>
 #include <sys/fcntl.h>
 #include <unistd.h>
@@ -65,18 +66,18 @@ void	create_file(char *file, int *fd1)
 		print_error(EACCES);
 	dup2(fd1[1], STDOUT_FILENO);
 	dup2(fd, STDIN_FILENO);
-	if (close(fd) < 0)
-		print_error(EIO);
+	close(fd1[0]);
 }
 
 void	execute_child(char *argv[], char *envp[], int *fd)
 {
 	char	*pos;
+	char	**args;
 
-	pos = get_location(envp, argv[2]);
-
+	args = ft_split(argv[2], ' ');
+	pos = get_location(envp, args[0]);
 	create_file(argv[1], fd);
-	if (execve(pos, argv, envp) < 0)
+	if (execve(pos, args, envp) < 0)
 		print_error(EINVAL);
 	// strs = get_path(envp, argv[3]);
 	// execve(strs[0], strs, envp);
@@ -84,18 +85,24 @@ void	execute_child(char *argv[], char *envp[], int *fd)
 
 void	execute_parent(char *argv[], char *envp[], int *fds)
 {
+	char	**args;
 	char	*pos;
 	int	fd;
 
+	args = ft_split(argv[3], ' ');
 	fd = open(argv[4], O_RDWR | O_CREAT | O_TRUNC, 0777);
 	if (fd < 0)
 		print_error(EIO);
 	dup2(fds[0], STDIN_FILENO);
 	dup2(fd, STDOUT_FILENO);
 	close(fds[1]);
-	pos = get_location(envp, argv[3]);
-	if (execve(pos, argv, envp) < 0)
+	pos = get_location(envp, args[0]);
+	if (execve(pos, args, envp) < 0)
 		print_error(ENOENT);
+}
+void	f(void)
+{
+	system("leaks pipex");
 }
 
 int	main(int argc, char *argv[], char *envp[])
@@ -116,6 +123,7 @@ int	main(int argc, char *argv[], char *envp[])
 		execute_child(argv, envp, fd);
 	waitpid(pid, NULL, 0);
 	execute_parent(argv, envp, fd);
+	atexit(f);
 	// execute(argv, envp, fd);
 	// check_args(argv, envp);
 	return EXIT_SUCCESS;
