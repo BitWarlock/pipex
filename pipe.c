@@ -6,13 +6,13 @@
 /*   By: mrezki <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:34:50 by mrezki            #+#    #+#             */
-/*   Updated: 2024/02/17 23:23:11 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/02/18 02:22:42 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
-#include <stdio.h>
 #include <sys/errno.h>
+#include <sys/fcntl.h>
 #include <unistd.h>
 
 char	**add_command(char **args, char *cmd)
@@ -26,10 +26,11 @@ char	**add_command(char **args, char *cmd)
 		args[i] = ft_strjoin(args[i], cmd);
 		i++;
 	}
+	free(cmd);
 	return (args);
 }
 
-char	**get_path(char *envp[], char *argv)
+char	*get_location(char *envp[], char *argv)
 {
 	char	**strs;
 	char	*tmp;
@@ -41,47 +42,60 @@ char	**get_path(char *envp[], char *argv)
 			tmp = envp[i];
 	strs = ft_split(tmp + 5, ':');
 	strs = add_command(strs, argv);
-	return (strs);
+	i = 0;
+	while (strs[i])
+	{
+		if (access(strs[i], F_OK) == 0)
+			return (strs[i]);
+		i++;
+	}
+	i = -1;
+	while (strs[++i])
+		free(strs[i]);
+	free(strs);
+	return (NULL);
 }
 
-void	create_file(char *outfile)
+void	create_file(char *file, int *fd1)
 {
 	int	fd;
 
-	fd = open(outfile, O_CREAT | O_RDWR | O_TRUNC, 0777);
+	fd = open(file, O_CREAT | O_RDWR, 0777);
 	if (fd < 0)
 		print_error(EACCES);
-	dup2(fd, STDOUT_FILENO);
+	dup2(fd1[1], STDOUT_FILENO);
+	dup2(fd, STDIN_FILENO);
 	if (close(fd) < 0)
 		print_error(EIO);
 }
 
-void	execute(char *argv[], char *envp[], int fd[2])
+void	execute_child(char *argv[], char *envp[], int *fd)
 {
-	pid_t	pid;
-	char	**strs;
+	char	*pos;
 
-	strs = get_path(envp, argv[1]);
-	pid = fork();
-	if (pid < 0)
-		print_error(ESRCH);
-	if (pid == 0)
-	{
-		close(fd[1]);
-		dup2(fd[0], STDIN_FILENO);
-		close(fd[0]);
-		strs = get_path(envp, argv[3]);
-		execve(strs[0], strs, envp);
-	}
-	else
-	{
-		waitpid(pid, NULL, 0);
-		close(fd[0]);
-		dup2(fd[1], STDOUT_FILENO);
-		strs = get_path(envp, argv[2]);
-		create_file(argv[4]);
-		execve(strs[0], strs, envp);
-	}
+	pos = get_location(envp, argv[2]);
+
+	create_file(argv[1], fd);
+	if (execve(pos, argv, envp) < 0)
+		print_error(EINVAL);
+	// strs = get_path(envp, argv[3]);
+	// execve(strs[0], strs, envp);
+}
+
+void	execute_parent(char *argv[], char *envp[], int *fds)
+{
+	char	*pos;
+	int	fd;
+
+	fd = open(argv[4], O_RDWR | O_CREAT | O_TRUNC, 0777);
+	if (fd < 0)
+		print_error(EIO);
+	dup2(fds[0], STDIN_FILENO);
+	dup2(fd, STDOUT_FILENO);
+	close(fds[1]);
+	pos = get_location(envp, argv[3]);
+	if (execve(pos, argv, envp) < 0)
+		print_error(ENOENT);
 }
 
 int	main(int argc, char *argv[], char *envp[])
@@ -99,7 +113,10 @@ int	main(int argc, char *argv[], char *envp[])
 	if (pid < 0)
 		print_error(ESRCH);
 	if (pid == 0)
-		execute(argv, envp, fd);
+		execute_child(argv, envp, fd);
+	waitpid(pid, NULL, 0);
+	execute_parent(argv, envp, fd);
+	// execute(argv, envp, fd);
 	// check_args(argv, envp);
 	return EXIT_SUCCESS;
 }

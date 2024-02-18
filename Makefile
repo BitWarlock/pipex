@@ -6,7 +6,7 @@
 #    By: mrezki <marvin@42.fr>                      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/02/12 18:11:02 by mrezki            #+#    #+#              #
-#    Updated: 2024/02/17 23:15:36 by mrezki           ###   ########.fr        #
+#    Updated: 2024/02/18 02:23:55 by mrezki           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,7 +39,7 @@ clean:
 	$(MAKE) -C libft/ clean
 
 fclean: clean
-	$(RM) $(LIBFT) a.out .DS_Store
+	$(RM) $(LIBFT) $(PROG) a.out .DS_Store
 	$(MAKE) -C libft/ fclean
 
 re: fclean all
