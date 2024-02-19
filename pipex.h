@@ -6,7 +6,7 @@
 /*   By: mrezki <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:35:17 by mrezki            #+#    #+#             */
-/*   Updated: 2024/02/17 14:16:49 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/02/19 16:12:07 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 # include <stdio.h>
 # include <sys/wait.h>
 
-void	print_error(int err);
+void	print_error(int err, char *str);
+
 
 #endif // !PIPEX_H

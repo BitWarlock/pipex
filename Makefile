@@ -6,7 +6,7 @@
 #    By: mrezki <marvin@42.fr>                      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/02/12 18:11:02 by mrezki            #+#    #+#              #
-#    Updated: 2024/02/18 02:23:55 by mrezki           ###   ########.fr        #
+#    Updated: 2024/02/19 13:09:48 by mrezki           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ PROG		= pipex
 LIBFT		= libft.a
 LIB_DIR		= ./libft
 RM		= rm -rf
-CFLAGS		= -Wall -Wextra -Werror
+CFLAGS		= -Wall -Wextra -Werror -g
 
 SRCS		= pipe.c errors.c
 

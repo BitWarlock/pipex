@@ -6,32 +6,33 @@
 /*   By: mrezki <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:34:50 by mrezki            #+#    #+#             */
-/*   Updated: 2024/02/18 04:32:22 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/02/19 16:26:09 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
-#include <stdlib.h>
-#include <sys/errno.h>
-#include <sys/fcntl.h>
-#include <unistd.h>
 
-char	**add_command(char **args, char *cmd)
+void	free_split(char **str)
 {
 	int	i;
 
-	i = 0;
-	cmd = ft_strjoin("/", cmd);
-	while (args[i])
-	{
-		args[i] = ft_strjoin(args[i], cmd);
-		i++;
-	}
-	free(cmd);
-	return (args);
+	i = -1;
+	while (str[++i])
+		free(str[i]);
+	free(str);
 }
 
-char	*get_location(char *envp[], char *argv)
+char	*add_command(char *arg, char *cmd)
+{
+	char	*str;
+
+	str = ft_strjoin(arg, "/");
+	str = ft_strjoin(str, cmd);
+	free(arg);
+	return (str);
+}
+
+char	*get_location(char *envp[], char *cmd)
 {
 	char	**strs;
 	char	*tmp;
@@ -42,45 +43,41 @@ char	*get_location(char *envp[], char *argv)
 		if (ft_strncmp(envp[i], "PATH=", 5) == 0)
 			tmp = envp[i];
 	strs = ft_split(tmp + 5, ':');
-	strs = add_command(strs, argv);
 	i = 0;
 	while (strs[i])
 	{
+		strs[i] = add_command(strs[i], cmd);
 		if (access(strs[i], F_OK) == 0)
 			return (strs[i]);
 		i++;
 	}
-	i = -1;
-	while (strs[++i])
-		free(strs[i]);
-	free(strs);
-	return (NULL);
+	return (free_split(strs), NULL);
 }
 
-void	create_file(char *file, int *fd1)
-{
-	int	fd;
-
-	fd = open(file, O_CREAT | O_RDWR, 0777);
-	if (fd < 0)
-		print_error(EACCES);
-	dup2(fd1[1], STDOUT_FILENO);
-	dup2(fd, STDIN_FILENO);
-	close(fd1[0]);
-}
-
-void	execute_child(char *argv[], char *envp[], int *fd)
+void	execute_child(char *argv[], char *envp[], int *fds)
 {
 	char	*pos;
 	char	**args;
+	int	fd;
 
+	fd = open(argv[1], O_RDONLY);
+	if (fd < 0)
+		print_error(errno, argv[1]);
+	dup2(fds[1], STDOUT_FILENO);
+	dup2(fd, STDIN_FILENO);
+	close(fds[0]);
 	args = ft_split(argv[2], ' ');
 	pos = get_location(envp, args[0]);
-	create_file(argv[1], fd);
+	if (!pos)
+	{
+		free_split(args);
+		print_error(errno, "Command");
+	}
 	if (execve(pos, args, envp) < 0)
-		print_error(EINVAL);
-	// strs = get_path(envp, argv[3]);
-	// execve(strs[0], strs, envp);
+	{
+		free_split(args);
+		print_error(errno, "execve");
+	}
 }
 
 void	execute_parent(char *argv[], char *envp[], int *fds)
@@ -92,17 +89,21 @@ void	execute_parent(char *argv[], char *envp[], int *fds)
 	args = ft_split(argv[3], ' ');
 	fd = open(argv[4], O_RDWR | O_CREAT | O_TRUNC, 0777);
 	if (fd < 0)
-		print_error(EIO);
+		print_error(errno, argv[4]);
 	dup2(fds[0], STDIN_FILENO);
 	dup2(fd, STDOUT_FILENO);
 	close(fds[1]);
 	pos = get_location(envp, args[0]);
+	if (!pos)
+	{
+		free_split(args);
+		print_error(errno, "Command");
+	}
 	if (execve(pos, args, envp) < 0)
-		print_error(ENOENT);
-}
-void	f(void)
-{
-	system("leaks pipex");
+	{
+		free_split(args);
+		print_error(errno, "execve");
+	}
 }
 
 int	main(int argc, char *argv[], char *envp[])
@@ -111,20 +112,17 @@ int	main(int argc, char *argv[], char *envp[])
 	pid_t	pid;
 
 	if (argc != 5)
-		print_error(EINVAL);
+		print_error(EINVAL, "4 arguments");
 	if (access(argv[1], F_OK) != 0)
-		print_error(ENOENT);
-	if (pipe(fd) == -1)
-		print_error(EPIPE);
+		print_error(errno, argv[1]);
+	if (pipe(fd) < 0)
+		print_error(errno, "pipe");
 	pid = fork();
 	if (pid < 0)
-		print_error(ESRCH);
+		print_error(errno, "fork");
 	if (pid == 0)
 		execute_child(argv, envp, fd);
-	waitpid(pid, NULL, 0);
 	execute_parent(argv, envp, fd);
-	atexit(f);
-	// execute(argv, envp, fd);
-	// check_args(argv, envp);
+	wait(NULL);
 	return EXIT_SUCCESS;
 }
