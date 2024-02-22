@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex.h                                            :+:      :+:    :+:   */
+/*   pipex_bonus.h                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mrezki <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:35:17 by mrezki            #+#    #+#             */
-/*   Updated: 2024/02/22 15:32:22 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/02/22 19:54:48 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,5 +25,7 @@ int		add_file(char *str, char c);
 void	print_error(int err, char *str);
 void	cmd_err(char *str, char **strs);
 void	free_split(char **str);
+void	doc(char *argv[], int *fd);
+void	pipe_doc(char *argv[]);
 
 #endif // !PIPEX_H

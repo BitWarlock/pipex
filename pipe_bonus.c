@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipe.c                                             :+:      :+:    :+:   */
+/*   pipe_bonus.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mrezki <mrezki@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:34:50 by mrezki            #+#    #+#             */
-/*   Updated: 2024/02/22 15:33:20 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/02/22 21:35:36 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex.h"
+#include "pipex_bonus.h"
 
 char	*add_command(char *arg, char *cmd)
 {
@@ -47,60 +47,66 @@ char	*get_location(char *envp[], char *cmd)
 	return (cmd);
 }
 
-void	execute_child(char *argv[], char *envp[], int *fds)
+void	execute_cmd(char *argv, char *envp[])
 {
-	int		fd1;
 	char	*pos;
 	char	**args;
 
-	fd1 = add_file(argv[1], 'i');
-	dup2(fd1, STDIN_FILENO);
-	dup2(fds[1], STDOUT_FILENO);
-	close(fds[0]);
-	args = ft_split(argv[2], ' ');
+	args = ft_split(argv, ' ');
 	pos = get_location(envp, args[0]);
 	if (execve(pos, args, envp) < 0)
-		cmd_err(pos, args);
+	{
+		ft_printf(2, "Error: %s: Command not found\n", args[0]);
+		free_split(args);
+		exit(EXIT_FAILURE);
+	}
 }
 
-void	execute_parent(char *argv[], char *envp[], int *fds)
-{
-	int		fd;
-	char	**args;
-	char	*pos;
-
-	fd = add_file(argv[4], 'o');
-	args = ft_split(argv[3], ' ');
-	dup2(fds[0], STDIN_FILENO);
-	dup2(fd, STDOUT_FILENO);
-	close(fds[1]);
-	pos = get_location(envp, args[0]);
-	close(fds[0]);
-	if (execve(pos, args, envp) < 0)
-		cmd_err(pos, args);
-}
-
-int	main(int argc, char *argv[], char *envp[])
+void	pipe_cmd(char **envp, char *cmd)
 {
 	int		fd[2];
 	pid_t	pid;
-	pid_t	pid2;
 
-	if (argc != 5)
-		print_error(EINVAL, "<./pipex infile cmd1 cmd2 outfile>");
 	if (pipe(fd) < 0)
 		print_error(errno, NULL);
 	pid = fork();
 	if (pid < 0)
-		print_error(errno, "fork");
+		print_error(errno, NULL);
 	if (pid == 0)
-		execute_child(argv, envp, fd);
-	pid2 = fork();
-	if (pid2 == 0)
-		execute_parent(argv, envp, fd);
-	close(fd[0]);
+	{
+		close(fd[0]);
+		dup2(fd[1], STDOUT_FILENO);
+		execute_cmd(cmd, envp);
+	}
 	close(fd[1]);
-	while (wait(NULL) > 0)
-		;
-	return (0);
+	dup2(fd[0], STDIN_FILENO);
+}
+
+int	main(int argc, char *argv[], char *envp[])
+{
+	int	cmd;
+	int	out;
+	int	inp;
+
+	if (argc < 5)
+		print_error(EINVAL, "<./pipex infile cmd1 cmd2 ... outfile>");
+	if (ft_strncmp(argv[1], "here_doc", 8) == 0)
+	{
+		if (argc < 6)
+			print_error(EINVAL, "<./pipex here_doc LIMITER cmd1 cmd2 outfile>");
+		out = add_file(argv[argc - 1], 't');
+		pipe_doc(argv);
+		cmd = 3;
+	}
+	else
+	{
+		cmd = 2;
+		out = add_file(argv[argc - 1], 'o');
+		inp = add_file(argv[1], 'i');
+		dup2(inp, STDIN_FILENO);
+	}
+	while (cmd < (argc - 2))
+		pipe_cmd(envp, argv[cmd++]);
+	dup2(out, STDOUT_FILENO);
+	execute_cmd(argv[argc - 2], envp);
 }
