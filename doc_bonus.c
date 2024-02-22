@@ -6,7 +6,7 @@
 /*   By: mrezki <mrezki@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:37:10 by mrezki            #+#    #+#             */
-/*   Updated: 2024/02/22 21:41:23 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/02/22 21:44:04 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,12 +75,6 @@ void	free_split(char **str)
 	while (str[++i])
 		free(str[i]);
 	free(str);
-}
-
-void	cmd_err(char *str, char **strs)
-{
-	(void)str;
-
 }
 
 int	add_file(char *str, char c)

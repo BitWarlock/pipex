@@ -6,7 +6,7 @@
 /*   By: mrezki <mrezki@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:34:50 by mrezki            #+#    #+#             */
-/*   Updated: 2024/02/22 21:35:36 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/02/22 22:44:15 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,7 @@ void	pipe_cmd(char **envp, char *cmd)
 	}
 	close(fd[1]);
 	dup2(fd[0], STDIN_FILENO);
+	// wait(NULL);
 }
 
 int	main(int argc, char *argv[], char *envp[])
@@ -88,6 +89,7 @@ int	main(int argc, char *argv[], char *envp[])
 	int	out;
 	int	inp;
 
+	printf("%d\n", getpid());
 	if (argc < 5)
 		print_error(EINVAL, "<./pipex infile cmd1 cmd2 ... outfile>");
 	if (ft_strncmp(argv[1], "here_doc", 8) == 0)
@@ -109,4 +111,5 @@ int	main(int argc, char *argv[], char *envp[])
 		pipe_cmd(envp, argv[cmd++]);
 	dup2(out, STDOUT_FILENO);
 	execute_cmd(argv[argc - 2], envp);
+	// wait(NULL);
 }
