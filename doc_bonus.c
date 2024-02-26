@@ -6,7 +6,7 @@
 /*   By: mrezki <mrezki@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:37:10 by mrezki            #+#    #+#             */
-/*   Updated: 2024/02/22 21:44:04 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/02/24 09:05:04 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,11 +36,13 @@ void	doc(char *argv[], int *fd)
 	}
 }
 
-void	pipe_doc(char *argv[])
+void	pipe_doc(char *argv[], int argc)
 {
 	int		fd[2];
 	pid_t	pid;
 
+	if (argc < 6)
+		print_error(EINVAL, "<./pipex here_doc LIMITER cmd1 cmd2 outfile>");
 	if (pipe(fd) < 0)
 		print_error(errno, NULL);
 	pid = fork();
@@ -77,24 +79,27 @@ void	free_split(char **str)
 	free(str);
 }
 
-int	add_file(char *str, char c)
+int	add_file(char *str, char c, int *i)
 {
 	int	fd;
 
 	if (c == 't')
 	{
+		*i = 3;
 		fd = open(str, O_CREAT | O_RDWR | O_APPEND | O_CLOEXEC, 0644);
 		if (fd < 0)
 			print_error(errno, str);
 	}
 	if (c == 'o')
 	{
+		*i = 2;
 		fd = open(str, O_CREAT | O_RDWR | O_TRUNC | O_CLOEXEC, 0644);
 		if (fd < 0)
 			print_error(errno, str);
 	}
 	if (c == 'i')
 	{
+		*i = 2;
 		fd = open(str, O_RDONLY | O_CLOEXEC);
 		if (fd < 0)
 			print_error(errno, str);

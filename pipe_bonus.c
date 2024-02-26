@@ -6,7 +6,7 @@
 /*   By: mrezki <mrezki@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:34:50 by mrezki            #+#    #+#             */
-/*   Updated: 2024/02/22 22:44:15 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/02/26 14:03:06 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ void	pipe_cmd(char **envp, char *cmd)
 	}
 	close(fd[1]);
 	dup2(fd[0], STDIN_FILENO);
-	// wait(NULL);
+	close(fd[0]);
 }
 
 int	main(int argc, char *argv[], char *envp[])
@@ -89,27 +89,25 @@ int	main(int argc, char *argv[], char *envp[])
 	int	out;
 	int	inp;
 
-	printf("%d\n", getpid());
 	if (argc < 5)
 		print_error(EINVAL, "<./pipex infile cmd1 cmd2 ... outfile>");
-	if (ft_strncmp(argv[1], "here_doc", 8) == 0)
+	if (ft_strncmp(argv[1], "here_doc", 8) == 0 && 8 == ft_strlen(argv[1]))
 	{
-		if (argc < 6)
-			print_error(EINVAL, "<./pipex here_doc LIMITER cmd1 cmd2 outfile>");
-		out = add_file(argv[argc - 1], 't');
-		pipe_doc(argv);
-		cmd = 3;
+		pipe_doc(argv, argc);
+		out = add_file(argv[argc - 1], 't', &cmd);
 	}
 	else
 	{
-		cmd = 2;
-		out = add_file(argv[argc - 1], 'o');
-		inp = add_file(argv[1], 'i');
+		out = add_file(argv[argc - 1], 'o', &cmd);
+		inp = add_file(argv[1], 'i', &cmd);
 		dup2(inp, STDIN_FILENO);
+		close(inp);
 	}
 	while (cmd < (argc - 2))
 		pipe_cmd(envp, argv[cmd++]);
 	dup2(out, STDOUT_FILENO);
+	close(out);
 	execute_cmd(argv[argc - 2], envp);
-	// wait(NULL);
+	while (waitpid(-1, NULL, 0) != -1)
+		;
 }
