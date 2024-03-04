@@ -6,7 +6,7 @@
 /*   By: mrezki <mrezki@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:34:50 by mrezki            #+#    #+#             */
-/*   Updated: 2024/02/26 10:34:01 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/03/04 14:12:55 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,20 +87,20 @@ int	main(int argc, char *argv[], char *envp[])
 	pid_t	pid2;
 
 	if (argc != 5)
-		print_error(EINVAL, "<./pipex infile cmd1 cmd2 outfile>");
+		print_error("Usage: ./pipex infile cmd1 cmd2 outfile");
 	if (pipe(fd) < 0)
-		print_error(errno, NULL);
+		print_error("Pipe creation failed");
 	pid = fork();
 	if (pid < 0)
-		print_error(errno, "fork");
+		print_error("Forking failed");
 	if (pid == 0)
 		execute_child(argv, envp, fd);
 	pid2 = fork();
 	if (pid2 == 0)
 		execute_parent(argv, envp, fd);
-	close(fd[0]);
-	close(fd[1]);
 	while (wait(NULL) > 0)
 		;
+	close(fd[0]);
+	close(fd[1]);
 	return (0);
 }

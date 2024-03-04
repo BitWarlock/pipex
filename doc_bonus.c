@@ -6,7 +6,7 @@
 /*   By: mrezki <mrezki@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:37:10 by mrezki            #+#    #+#             */
-/*   Updated: 2024/02/24 09:05:04 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/03/04 14:06:33 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ void	doc(char *argv[], int *fd)
 		if (!str)
 		{
 			free(str);
-			print_error(EIO, "get_next_line");
+			print_error("get_next_line failed");
 		}
 		if (!ft_strncmp(str, argv[2], ft_strlen(argv[2])) && \
 		ft_strlen(str) == ft_strlen(argv[2]) + 1)
@@ -42,12 +42,12 @@ void	pipe_doc(char *argv[], int argc)
 	pid_t	pid;
 
 	if (argc < 6)
-		print_error(EINVAL, "<./pipex here_doc LIMITER cmd1 cmd2 outfile>");
+		print_error("Usage: ./pipex here_doc LIMITER cmd1 cmd2 outfile");
 	if (pipe(fd) < 0)
-		print_error(errno, NULL);
+		print_error("Pipe creation failed");
 	pid = fork();
 	if (pid < 0)
-		print_error(errno, NULL);
+		print_error("Forking failed");
 	if (pid == 0)
 		doc(argv, fd);
 	else
@@ -57,15 +57,9 @@ void	pipe_doc(char *argv[], int argc)
 	}
 }
 
-void	print_error(int err, char *str)
+void	print_error(char *str)
 {
-	char	*error;
-
-	error = strerror(err);
-	if (!str)
-		ft_printf(2, "Error: %s\n", error);
-	else
-		ft_printf(2, "Error: %s: %s\n", error, str);
+	ft_printf(2, "Error: %s\n", str);
 	exit(EXIT_FAILURE);
 }
 
@@ -88,21 +82,21 @@ int	add_file(char *str, char c, int *i)
 		*i = 3;
 		fd = open(str, O_CREAT | O_RDWR | O_APPEND | O_CLOEXEC, 0644);
 		if (fd < 0)
-			print_error(errno, str);
+			print_error("Output file creation failed");
 	}
 	if (c == 'o')
 	{
 		*i = 2;
 		fd = open(str, O_CREAT | O_RDWR | O_TRUNC | O_CLOEXEC, 0644);
 		if (fd < 0)
-			print_error(errno, str);
+			print_error("Output file creation failed");
 	}
 	if (c == 'i')
 	{
 		*i = 2;
 		fd = open(str, O_RDONLY | O_CLOEXEC);
 		if (fd < 0)
-			print_error(errno, str);
+			print_error("Input file opening failed");
 	}
 	return (fd);
 }

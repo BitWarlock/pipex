@@ -6,7 +6,7 @@
 /*   By: mrezki <mrezki@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:34:50 by mrezki            #+#    #+#             */
-/*   Updated: 2024/02/26 14:03:06 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/03/04 14:07:08 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,10 +68,10 @@ void	pipe_cmd(char **envp, char *cmd)
 	pid_t	pid;
 
 	if (pipe(fd) < 0)
-		print_error(errno, NULL);
+		print_error("Pipe creation failed");
 	pid = fork();
 	if (pid < 0)
-		print_error(errno, NULL);
+		print_error("Forking failed");
 	if (pid == 0)
 	{
 		close(fd[0]);
@@ -90,7 +90,7 @@ int	main(int argc, char *argv[], char *envp[])
 	int	inp;
 
 	if (argc < 5)
-		print_error(EINVAL, "<./pipex infile cmd1 cmd2 ... outfile>");
+		print_error("Usage: ./pipex infile cmd1 cmd2 ... outfile");
 	if (ft_strncmp(argv[1], "here_doc", 8) == 0 && 8 == ft_strlen(argv[1]))
 	{
 		pipe_doc(argv, argc);
@@ -105,9 +105,9 @@ int	main(int argc, char *argv[], char *envp[])
 	}
 	while (cmd < (argc - 2))
 		pipe_cmd(envp, argv[cmd++]);
+	while (waitpid(-1, NULL, 0) != -1)
+		;
 	dup2(out, STDOUT_FILENO);
 	close(out);
 	execute_cmd(argv[argc - 2], envp);
-	while (waitpid(-1, NULL, 0) != -1)
-		;
 }

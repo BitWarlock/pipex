@@ -6,7 +6,7 @@
 /*   By: mrezki <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:35:17 by mrezki            #+#    #+#             */
-/*   Updated: 2024/02/24 09:05:27 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/03/04 14:03:33 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 # include <sys/wait.h>
 
 int		add_file(char *str, char c, int *i);
-void	print_error(int err, char *str);
+void	print_error(char *str);
 void	cmd_err(char *str, char **strs);
 void	free_split(char **str);
 void	doc(char *argv[], int *fd);
