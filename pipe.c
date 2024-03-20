@@ -6,7 +6,7 @@
 /*   By: mrezki <mrezki@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:34:50 by mrezki            #+#    #+#             */
-/*   Updated: 2024/03/04 14:12:55 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/03/20 22:58:31 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,14 +53,15 @@ void	execute_child(char *argv[], char *envp[], int *fds)
 	char	*pos;
 	char	**args;
 
-	fd1 = add_file(argv[1], 'i');
-	dup2(fd1, STDIN_FILENO);
-	dup2(fds[1], STDOUT_FILENO);
-	close(fds[0]);
+	fd1 = open_file(argv[1], 'i');
 	args = ft_split(argv[2], ' ');
+	dup2(fd1, STDIN_FILENO);
+	close(fds[0]);
+	dup2(fds[1], STDOUT_FILENO);
 	pos = get_location(envp, args[0]);
+	close(fds[1]);
 	if (execve(pos, args, envp) < 0)
-		cmd_err(pos, args);
+		cmd_err(args);
 }
 
 void	execute_parent(char *argv[], char *envp[], int *fds)
@@ -69,7 +70,7 @@ void	execute_parent(char *argv[], char *envp[], int *fds)
 	char	**args;
 	char	*pos;
 
-	fd = add_file(argv[4], 'o');
+	fd = open_file(argv[4], 'o');
 	args = ft_split(argv[3], ' ');
 	dup2(fds[0], STDIN_FILENO);
 	dup2(fd, STDOUT_FILENO);
@@ -77,30 +78,21 @@ void	execute_parent(char *argv[], char *envp[], int *fds)
 	pos = get_location(envp, args[0]);
 	close(fds[0]);
 	if (execve(pos, args, envp) < 0)
-		cmd_err(pos, args);
+		cmd_err(args);
 }
 
 int	main(int argc, char *argv[], char *envp[])
 {
 	int		fd[2];
-	pid_t	pid;
-	pid_t	pid2;
 
 	if (argc != 5)
-		print_error("Usage: ./pipex infile cmd1 cmd2 outfile");
+		print_error("Usage: ./pipex infile cmd1 cmd2 outfile", NULL);
 	if (pipe(fd) < 0)
-		print_error("Pipe creation failed");
-	pid = fork();
-	if (pid < 0)
-		print_error("Forking failed");
-	if (pid == 0)
-		execute_child(argv, envp, fd);
-	pid2 = fork();
-	if (pid2 == 0)
-		execute_parent(argv, envp, fd);
-	while (wait(NULL) > 0)
-		;
+		print_error("Pipe creation failed", NULL);
+	pipe_cmd(argv, envp, fd);
 	close(fd[0]);
 	close(fd[1]);
+	while ((wait(NULL)) != -1)
+		continue ;
 	return (0);
 }

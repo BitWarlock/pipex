@@ -1,20 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   errors.c                                           :+:      :+:    :+:   */
+/*   helpers.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mrezki <mrezki@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:37:10 by mrezki            #+#    #+#             */
-/*   Updated: 2024/03/04 14:11:39 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/03/20 22:56:33 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
+#include <stdlib.h>
 
-void	print_error(char *str)
+void	print_error(char *str, char *input)
 {
-	ft_printf(2, "Error: %s\n", str);
+	if (input)
+		ft_printf(2, "Error: %s: %s.\n", str, input);
+	else
+		ft_printf(2, "Error: %s.\n", str);
 	exit(EXIT_FAILURE);
 }
 
@@ -28,15 +32,14 @@ void	free_split(char **str)
 	free(str);
 }
 
-void	cmd_err(char *str, char **strs)
+void	cmd_err(char **strs)
 {
-	(void)str;
-	ft_printf(2, "Error: %s: Command not found\n", strs[0]);
+	ft_printf(2, "Error: %s: Command not found.\n", strs[0]);
 	free_split(strs);
 	exit(EXIT_FAILURE);
 }
 
-int	add_file(char *str, char c)
+int	open_file(char *str, char c)
 {
 	int	fd;
 
@@ -44,13 +47,13 @@ int	add_file(char *str, char c)
 	{
 		fd = open(str, O_CREAT | O_RDWR | O_TRUNC | O_CLOEXEC, 0644);
 		if (fd < 0)
-			print_error("Output file creation failed");
+			print_error("Output file creation failed", str);
 	}
 	if (c == 'i')
 	{
 		fd = open(str, O_RDONLY | O_CLOEXEC);
 		if (fd < 0)
-			print_error("Input file opening failed");
+			print_error("Input file opening failed", str);
 	}
 	return (fd);
 }

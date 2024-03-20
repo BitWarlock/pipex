@@ -6,7 +6,7 @@
 /*   By: mrezki <mrezki@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:34:50 by mrezki            #+#    #+#             */
-/*   Updated: 2024/03/04 14:07:08 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/03/20 22:40:56 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,19 +68,44 @@ void	pipe_cmd(char **envp, char *cmd)
 	pid_t	pid;
 
 	if (pipe(fd) < 0)
-		print_error("Pipe creation failed");
+		print_error("Pipe creation failed", NULL);
 	pid = fork();
 	if (pid < 0)
-		print_error("Forking failed");
+		print_error("Forking failed", NULL);
 	if (pid == 0)
 	{
 		close(fd[0]);
 		dup2(fd[1], STDOUT_FILENO);
+		close(fd[1]);
 		execute_cmd(cmd, envp);
 	}
 	close(fd[1]);
 	dup2(fd[0], STDIN_FILENO);
 	close(fd[0]);
+}
+
+void	last_cmd(char *cmd, char **envp, int out)
+{
+	char	*pos;
+	char	**args;
+	pid_t	pid;
+
+	args = ft_split(cmd, ' ');
+	pos = get_location(envp, args[0]);
+	pid = fork();
+	if (pid == 0)
+	{
+		dup2(out, STDOUT_FILENO);
+		close(out);
+		if (execve(pos, args, envp) < 0)
+		{
+			ft_printf(2, "Error: %s: Command not found\n", args[0]);
+			free_split(args);
+			exit(EXIT_FAILURE);
+		}
+	}
+	while (wait(NULL) != -1)
+		continue ;
 }
 
 int	main(int argc, char *argv[], char *envp[])
@@ -90,7 +115,7 @@ int	main(int argc, char *argv[], char *envp[])
 	int	inp;
 
 	if (argc < 5)
-		print_error("Usage: ./pipex infile cmd1 cmd2 ... outfile");
+		print_error("Usage: ./pipex infile cmd1 cmd2 ... outfile", NULL);
 	if (ft_strncmp(argv[1], "here_doc", 8) == 0 && 8 == ft_strlen(argv[1]))
 	{
 		pipe_doc(argv, argc);
@@ -105,9 +130,5 @@ int	main(int argc, char *argv[], char *envp[])
 	}
 	while (cmd < (argc - 2))
 		pipe_cmd(envp, argv[cmd++]);
-	while (waitpid(-1, NULL, 0) != -1)
-		;
-	dup2(out, STDOUT_FILENO);
-	close(out);
-	execute_cmd(argv[argc - 2], envp);
+	last_cmd(argv[argc - 2], envp, out);
 }
