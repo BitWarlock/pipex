@@ -6,22 +6,11 @@
 /*   By: mrezki <mrezki@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:34:50 by mrezki            #+#    #+#             */
-/*   Updated: 2024/03/20 22:40:56 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/03/21 05:40:36 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex_bonus.h"
-
-char	*add_command(char *arg, char *cmd)
-{
-	char	*str;
-	char	*res;
-
-	str = ft_strjoin(arg, "/");
-	res = ft_strjoin(str, cmd);
-	free(str);
-	return (res);
-}
 
 char	*get_location(char *envp[], char *cmd)
 {
@@ -79,8 +68,8 @@ void	pipe_cmd(char **envp, char *cmd)
 		close(fd[1]);
 		execute_cmd(cmd, envp);
 	}
-	close(fd[1]);
 	dup2(fd[0], STDIN_FILENO);
+	close(fd[1]);
 	close(fd[0]);
 }
 
@@ -104,8 +93,6 @@ void	last_cmd(char *cmd, char **envp, int out)
 			exit(EXIT_FAILURE);
 		}
 	}
-	while (wait(NULL) != -1)
-		continue ;
 }
 
 int	main(int argc, char *argv[], char *envp[])
@@ -113,9 +100,11 @@ int	main(int argc, char *argv[], char *envp[])
 	int	cmd;
 	int	out;
 	int	inp;
+	int	stin;
 
 	if (argc < 5)
 		print_error("Usage: ./pipex infile cmd1 cmd2 ... outfile", NULL);
+	stin = dup(STDIN_FILENO);
 	if (ft_strncmp(argv[1], "here_doc", 8) == 0 && 8 == ft_strlen(argv[1]))
 	{
 		pipe_doc(argv, argc);
@@ -126,9 +115,11 @@ int	main(int argc, char *argv[], char *envp[])
 		out = add_file(argv[argc - 1], 'o', &cmd);
 		inp = add_file(argv[1], 'i', &cmd);
 		dup2(inp, STDIN_FILENO);
-		close(inp);
 	}
 	while (cmd < (argc - 2))
 		pipe_cmd(envp, argv[cmd++]);
 	last_cmd(argv[argc - 2], envp, out);
+	close_fds(stin, out, inp, 3);
+	while (wait(NULL) != -1)
+		continue ;
 }

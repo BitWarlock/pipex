@@ -6,20 +6,24 @@
 /*   By: mrezki <mrezki@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:37:10 by mrezki            #+#    #+#             */
-/*   Updated: 2024/03/20 22:56:33 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/03/21 22:14:54 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
-#include <stdlib.h>
 
 void	print_error(char *str, char *input)
 {
 	if (input)
+	{
 		ft_printf(2, "Error: %s: %s.\n", str, input);
+		exit(EXIT_FAILURE);
+	}
 	else
+	{
 		ft_printf(2, "Error: %s.\n", str);
-	exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE);
+	}
 }
 
 void	free_split(char **str)

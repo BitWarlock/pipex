@@ -6,11 +6,12 @@
 /*   By: mrezki <mrezki@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 17:37:10 by mrezki            #+#    #+#             */
-/*   Updated: 2024/03/20 01:59:14 by mrezki           ###   ########.fr       */
+/*   Updated: 2024/03/21 05:31:28 by mrezki           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex_bonus.h"
+#include <stdlib.h>
 
 void	doc(char *argv[], int *fd)
 {
@@ -19,6 +20,7 @@ void	doc(char *argv[], int *fd)
 	close(fd[0]);
 	while (1)
 	{
+		ft_printf(1, "here_doc > ");
 		str = get_next_line(STDIN_FILENO);
 		if (!str)
 		{
@@ -60,10 +62,15 @@ void	pipe_doc(char *argv[], int argc)
 void	print_error(char *str, char *input)
 {
 	if (input)
+	{
 		ft_printf(2, "Error: %s: %s.\n", str, input);
+		exit(EXIT_FAILURE);
+	}
 	else
+	{
 		ft_printf(2, "Error: %s\n", str);
-	exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE);
+	}
 }
 
 void	free_split(char **str)
@@ -99,7 +106,7 @@ int	add_file(char *str, char c, int *i)
 		*i = 2;
 		fd = open(str, O_RDONLY | O_CLOEXEC);
 		if (fd < 0)
-			ft_printf(2, "Error: %s: Input file opening failed\n", str);
+			print_error("Input file opening failed", str);
 	}
 	return (fd);
 }
