@@ -39,7 +39,7 @@ char	*get_location(char *envp[], char *cmd)
 	{
 		tmp = add_command(strs[i], cmd);
 		if (access(tmp, F_OK | X_OK) == 0)
-			return (tmp);
+			return (free_split(strs), tmp);
 		free(tmp);
 		i++;
 	}

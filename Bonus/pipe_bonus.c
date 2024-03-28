@@ -28,12 +28,12 @@ char	*get_location(char *envp[], char *cmd)
 	{
 		tmp = add_command(strs[i], cmd);
 		if (access(tmp, F_OK | X_OK) == 0)
-			return (tmp);
+			return (free_split(strs), tmp);
 		free(tmp);
 		i++;
 	}
 	free_split(strs);
-	return (cmd);
+	return (ft_strdup(cmd));
 }
 
 void	execute_cmd(char *argv, char *envp[])
@@ -47,6 +47,7 @@ void	execute_cmd(char *argv, char *envp[])
 	{
 		ft_printf(2, "Error: %s: Command not found\n", args[0]);
 		free_split(args);
+		free(pos);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -90,8 +91,14 @@ void	last_cmd(char *cmd, char **envp, int out)
 		{
 			ft_printf(2, "Error: %s: Command not found\n", args[0]);
 			free_split(args);
+			free(pos);
 			exit(EXIT_FAILURE);
 		}
+	}
+	else
+	{
+		free_split(args);
+		free(pos);
 	}
 }
 
@@ -116,7 +123,7 @@ int	main(int argc, char *argv[], char *envp[])
 		inp = add_file(argv[1], 'i', &cmd);
 		dup2(inp, STDIN_FILENO);
 	}
-	while (cmd < (argc - 2))
+	while (cmd < argc - 2)
 		pipe_cmd(envp, argv[cmd++]);
 	last_cmd(argv[argc - 2], envp, out);
 	close_fds(stin, out, inp, 3);

@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "pipex_bonus.h"
-#include <stdlib.h>
 
 void	doc(char *argv[], int *fd)
 {
@@ -36,13 +35,16 @@ void	doc(char *argv[], int *fd)
 		ft_printf(fd[1], str);
 		free(str);
 	}
+	close(fd[1]);
 }
 
 void	pipe_doc(char *argv[], int argc)
 {
 	int		fd[2];
+	int		stin;
 	pid_t	pid;
 
+	stin = dup(STDIN_FILENO);
 	if (argc < 6)
 		print_error("Usage: ./pipex here_doc LIMITER cmd1 cmd2 outfile", NULL);
 	if (pipe(fd) < 0)
@@ -56,6 +58,7 @@ void	pipe_doc(char *argv[], int argc)
 	{
 		close(fd[1]);
 		dup2(fd[0], STDIN_FILENO);
+		close(fd[0]);
 	}
 }
 

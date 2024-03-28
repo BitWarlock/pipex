@@ -27,34 +27,34 @@ OBJS_B		= $(SRCS_B:.c=.o)
 all: $(PROG)
 
 %.o: %.c
-	@$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(LIBFT):
-	@echo "\033[32mCompiling pipex"
-	@$(MAKE) -C $(LIB_DIR)
-	@mv $(LIB_DIR)/$(LIBFT) .
+	echo "\033[32mCompiling pipex"
+	$(MAKE) -C $(LIB_DIR)
+	mv $(LIB_DIR)/$(LIBFT) .
 
 
 $(PROG): $(OBJS) $(LIBFT)
-	@$(CC) $(CFLAGS) $^ -o $@
-	@echo "\033[1;36m'pipex' is now ready."
-	@echo "Usage: > ./pipex input_file cmd1 cmd2 output_file"
+	$(CC) $(CFLAGS) $^ -o $@
+	echo "\033[1;36m'pipex' is now ready."
+	echo "Usage: > ./pipex input_file cmd1 cmd2 output_file"
 
 bonus: $(LIBFT) $(OBJS_B)
-	@$(CC) $(CFLAGS) $^ -o $(PROG)
-	@echo "\033[1;36m'pipex' is now ready."
-	@echo "Usage:\n> ./pipex input_file cmd1 cmd2 ... output_file"
-	@echo "> ./pipex here_doc LIMITER cmd1 cmd2 outfile"
+	$(CC) $(CFLAGS) $^ -o $(PROG)
+	echo "\033[1;36m'pipex' is now ready."
+	echo "Usage:\n> ./pipex input_file cmd1 cmd2 ... output_file"
+	echo "> ./pipex here_doc LIMITER cmd1 cmd2 outfile"
 
 clean:
-	@$(RM) $(OBJS) $(OBJS_B)
-	@$(MAKE) -C libft/ clean
-	@echo "\033[38;2;188;31;54mCleanup Complete."
+	$(RM) $(OBJS) $(OBJS_B)
+	$(MAKE) -C libft/ clean
+	echo "\033[38;2;188;31;54mCleanup Complete."
 
 fclean: clean
-	@$(RM) $(LIBFT) $(PROG) a.out .DS_Store
-	@$(MAKE) -C libft/ fclean
-	@echo "\033[38;2;188;31;54mFull Cleanup Complete."
+	$(RM) $(LIBFT) $(PROG) a.out .DS_Store
+	$(MAKE) -C libft/ fclean
+	echo "\033[38;2;188;31;54mFull Cleanup Complete."
 
 re: fclean all
 

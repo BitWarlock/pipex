@@ -38,16 +38,16 @@ OBJS		= $(SRCS:.c=.o)
 all: $(NAME)
 
 %.o: %.c libft.h
-	@$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 $(NAME): $(OBJS)
-	@$(AR) rcs $(NAME) $(OBJS)
+	$(AR) rcs $(NAME) $(OBJS)
 
 clean:
-	@$(RM) $(OBJS)
+	$(RM) $(OBJS)
 
 fclean: clean
-	@$(RM) $(NAME) a.out .DS_Store
+	$(RM) $(NAME) a.out .DS_Store
 
 re: fclean all
 
